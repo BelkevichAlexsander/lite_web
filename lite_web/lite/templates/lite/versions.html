@@ -1,0 +1,18 @@
+<div>
+    {% for item in lst %}
+        <div>
+            <ul>
+                <li><a href="{% url 'lite:openid' item.id %}">  id: {{ item.id }}</a></li>
+                <li>software: {{ item.software }}</li>
+                <li>version: {{ item.version }}</li>
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
+<div>
+    <a href="{% url 'lite:index' %}">Base page</a>
+    <br>
+    <a href="{% url 'lite:version' %}">add version</a>
+    <br>
+</div>

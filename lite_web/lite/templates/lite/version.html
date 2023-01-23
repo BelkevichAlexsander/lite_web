@@ -1,0 +1,14 @@
+<h1>New data</h1>
+
+<form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="software">software</label>
+            <input type="text" name="software" class="form-control" id="software">
+        </div>
+        <div class="form-group">
+            <label for="version">version</label>
+            <input type="text" name="version" class="form-control" id="version">
+        </div>
+        <button type="submit">Submit</button>
+    </form>
