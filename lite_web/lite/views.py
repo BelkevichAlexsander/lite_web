@@ -1,71 +1,61 @@
-from django.shortcuts import render
+from django.http.response import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
-dct_version = []
+version_control = []
 
 
-def index(request):
-    return render(request, 'lite/index.html')
-
-
+@csrf_exempt
 def version(request):
     if request.method == 'GET':
-        return render(request, 'lite/version.html')
+        if not version_control:
+            return HttpResponse('ERROR: Dictionary version is empty')
+
+        return HttpResponse(version_control)
+
+    elif request.method == 'POST':
+        version_control.append({
+            'id': str(len(version_control)),
+            'software': request.POST.get('software'),
+            'version': request.POST.get('version')
+        })
+        print(version_control)
+
+        return HttpResponse(f'Create: {version_control[len(version_control) - 1]}')
     else:
-        if request.POST['software'] is not None or request.POST['version'] is not None:
-
-            dct_version.append({
-                'id': len(dct_version),
-                'software': request.POST.get('software'),
-                'version': request.POST.get('version')
-            })
-
-            return render(
-                request, 'lite/index.html', {'error': 'object save'}
-            )
-        else:
-            return render(
-                request, 'lite/index.html', {"error": "object don't save"}
-            )
+        return HttpResponse('ERROR: This method POST is not correct')
 
 
-def versions(request):
-    return render(request, 'lite/versions.html', {"lst": dct_version})
-
-
-def openid(request, lite_pk):
+def one_version(request, lite_pk):
     if request.method == 'GET':
-        for x in dct_version:
-            if x['id'] == lite_pk:
-                return render(request, 'lite/id.html', {'item': x})
+        return HttpResponse(f'Selected version: {version_control[lite_pk]}')
+    else:
+        return HttpResponse('ERROR: This version is not created. Please create!')
 
 
+@csrf_exempt
 def correct(request, lite_pk):
     if request.method == 'POST':
-        print('correct')
-        for i, x in enumerate(dct_version):
-            if x['id'] == lite_pk:
-                dct_version[i] = {
-                    'id': lite_pk,
-                    'software': request.POST.get('software'),
-                    'version': request.POST.get('version')
-                }
+        version_control[lite_pk] = {
+            'id': str(lite_pk),
+            'software': request.POST.get('software'),
+            'version': request.POST.get('version')
+        }
 
-                return render(request, 'lite/index.html', {'error': {f'id: {lite_pk} is correct'}})
+        return HttpResponse(f'Update: {version_control[lite_pk]}')
     else:
-        return render(request, 'lite/index.html', {'error': {'mistake correct'}})
+        return HttpResponse('ERROR: This is not POST method for correct')
 
 
+@csrf_exempt
 def delete(request, lite_pk):
     if request.method == 'POST':
-        print('delete')
-        for i, x in enumerate(dct_version):
-            if x['id'] == lite_pk:
-                dct_version[i] = {
-                    'id': lite_pk,
-                    'software': 'delete software',
-                    'version': 'delete version'
-                }
-                return render(request, 'lite/index.html', {'error': {f'id: {lite_pk} is delete. This id is null'}})
+        version_control[lite_pk] = {
+            'id': str(lite_pk),
+            'software': 'delete software',
+            'version': 'delete version'
+            }
+
+        return HttpResponse(f'Delete: {version_control[lite_pk]}')
     else:
-        return render(request, 'lite/index.html', {'error': {'mistake delete'}})
+        return HttpResponse('ERROR: This is not POST method for delete')
