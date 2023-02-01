@@ -1,8 +1,9 @@
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .execptions import NotElementsInVersionControl
+from .execptions import NoElementsInVersionControl
 
+ERROR_MISTAKE_INDEX = 'No versions present. Please check if the input is correct.'
 version_control = []
 
 
@@ -11,7 +12,7 @@ def version(request):
     try:
         if request.method == 'GET':
             if not version_control:
-                raise NotElementsInVersionControl
+                raise NoElementsInVersionControl
 
             return JsonResponse(version_control, safe=False)
 
@@ -22,17 +23,17 @@ def version(request):
                 'version': request.POST.get('version')
             })
 
-            return JsonResponse({'Create': f'{version_control[len(version_control) - 1]}'})
-    except (IndexError, NotElementsInVersionControl) as error:
-        return JsonResponse({'ERROR': f'{error}'})
+            return JsonResponse({'Create': version_control[len(version_control) - 1]})
+    except NoElementsInVersionControl as error:
+        return JsonResponse({'ERROR': str(error)})
 
 
 def one_version(request, lite_pk):
     try:
         if request.method == 'GET':
-            return JsonResponse({'Selected version': f'{version_control[lite_pk]}'})
-    except IndexError as error:
-        return JsonResponse({'ERROR': f'{error}'})
+            return JsonResponse({'Selected version': version_control[lite_pk]})
+    except IndexError:
+        return JsonResponse({'ERROR': ERROR_MISTAKE_INDEX})
 
 
 @csrf_exempt
@@ -45,9 +46,9 @@ def correct(request, lite_pk):
                 'version': request.POST.get('version')
             }
 
-            return JsonResponse({'Update': f'{version_control[lite_pk]}'})
-    except IndexError as error:
-        return JsonResponse({'ERROR': f'{error}'})
+            return JsonResponse({'Update': version_control[lite_pk]})
+    except IndexError:
+        return JsonResponse({'ERROR': ERROR_MISTAKE_INDEX})
 
 
 @csrf_exempt
@@ -60,6 +61,6 @@ def delete(request, lite_pk):
                 'version': None
                 }
 
-            return JsonResponse({'Delete': f'{version_control[lite_pk]}'})
-    except IndexError as error:
-        return JsonResponse({'ERROR': f'{error}'})
+            return JsonResponse({'Delete': version_control[lite_pk]})
+    except IndexError:
+        return JsonResponse({'ERROR': ERROR_MISTAKE_INDEX})
