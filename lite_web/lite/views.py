@@ -1,7 +1,7 @@
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .execptions import NoElementsInVersionControl
+from .exceptions import NoElementsInVersionControl
 
 ERROR_MISTAKE_INDEX = 'No versions present. Please check if the input is correct.'
 version_control = []
