@@ -23,17 +23,17 @@ def version(request):
                 'version': request.POST.get('version')
             })
 
-            return JsonResponse({'Create': version_control[len(version_control) - 1]})
+            return JsonResponse(version_control[len(version_control) - 1])
     except NoElementsInVersionControl as error:
-        return JsonResponse({'ERROR': str(error)})
+        return JsonResponse({'error': str(error)})
 
 
 def one_version(request, lite_pk):
     try:
         if request.method == 'GET':
-            return JsonResponse({'Selected version': version_control[lite_pk]})
+            return JsonResponse(version_control[lite_pk], safe=False)
     except IndexError:
-        return JsonResponse({'ERROR': ERROR_MISTAKE_INDEX})
+        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
 
 
 @csrf_exempt
@@ -46,9 +46,9 @@ def correct(request, lite_pk):
                 'version': request.POST.get('version')
             }
 
-            return JsonResponse({'Update': version_control[lite_pk]})
+            return JsonResponse(version_control[lite_pk], safe=False)
     except IndexError:
-        return JsonResponse({'ERROR': ERROR_MISTAKE_INDEX})
+        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
 
 
 @csrf_exempt
@@ -61,6 +61,6 @@ def delete(request, lite_pk):
                 'version': None
                 }
 
-            return JsonResponse({'Delete': version_control[lite_pk]})
+            return JsonResponse(version_control[lite_pk], safe=False)
     except IndexError:
-        return JsonResponse({'ERROR': ERROR_MISTAKE_INDEX})
+        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
