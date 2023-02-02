@@ -1,71 +1,66 @@
-from django.shortcuts import render
+from django.http.response import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from .exceptions import NoElementsInVersionControl
+
+ERROR_MISTAKE_INDEX = 'No versions present. Please check if the input is correct.'
+version_control = []
 
 
-dct_version = []
-
-
-def index(request):
-    return render(request, 'lite/index.html')
-
-
+@csrf_exempt
 def version(request):
-    if request.method == 'GET':
-        return render(request, 'lite/version.html')
-    else:
-        if request.POST['software'] is not None or request.POST['version'] is not None:
+    try:
+        if request.method == 'GET':
+            if not version_control:
+                raise NoElementsInVersionControl
 
-            dct_version.append({
-                'id': len(dct_version),
+            return JsonResponse(version_control, safe=False)
+
+        elif request.method == 'POST':
+            version_control.append({
+                'id': str(len(version_control)),
                 'software': request.POST.get('software'),
                 'version': request.POST.get('version')
             })
 
-            return render(
-                request, 'lite/index.html', {'error': 'object save'}
-            )
-        else:
-            return render(
-                request, 'lite/index.html', {"error": "object don't save"}
-            )
+            return JsonResponse(version_control[len(version_control) - 1])
+    except NoElementsInVersionControl as error:
+        return JsonResponse({'error': str(error)})
 
 
-def versions(request):
-    return render(request, 'lite/versions.html', {"lst": dct_version})
+def one_version(request, lite_pk):
+    try:
+        if request.method == 'GET':
+            return JsonResponse(version_control[lite_pk], safe=False)
+    except IndexError:
+        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
 
 
-def openid(request, lite_pk):
-    if request.method == 'GET':
-        for x in dct_version:
-            if x['id'] == lite_pk:
-                return render(request, 'lite/id.html', {'item': x})
-
-
+@csrf_exempt
 def correct(request, lite_pk):
-    if request.method == 'POST':
-        print('correct')
-        for i, x in enumerate(dct_version):
-            if x['id'] == lite_pk:
-                dct_version[i] = {
-                    'id': lite_pk,
-                    'software': request.POST.get('software'),
-                    'version': request.POST.get('version')
-                }
+    try:
+        if request.method == 'POST':
+            version_control[lite_pk] = {
+                'id': str(lite_pk),
+                'software': request.POST.get('software'),
+                'version': request.POST.get('version')
+            }
 
-                return render(request, 'lite/index.html', {'error': {f'id: {lite_pk} is correct'}})
-    else:
-        return render(request, 'lite/index.html', {'error': {'mistake correct'}})
+            return JsonResponse(version_control[lite_pk], safe=False)
+    except IndexError:
+        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
 
 
+@csrf_exempt
 def delete(request, lite_pk):
-    if request.method == 'POST':
-        print('delete')
-        for i, x in enumerate(dct_version):
-            if x['id'] == lite_pk:
-                dct_version[i] = {
-                    'id': lite_pk,
-                    'software': 'delete software',
-                    'version': 'delete version'
+    try:
+        if request.method == 'POST':
+            version_control[lite_pk] = {
+                'id': str(lite_pk),
+                'software': None,
+                'version': None
                 }
-                return render(request, 'lite/index.html', {'error': {f'id: {lite_pk} is delete. This id is null'}})
-    else:
-        return render(request, 'lite/index.html', {'error': {'mistake delete'}})
+
+            return JsonResponse(version_control[lite_pk], safe=False)
+    except IndexError:
+        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
