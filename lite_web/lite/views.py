@@ -1,66 +1,40 @@
 from django.http.response import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-from .exceptions import NoElementsInVersionControl
+from django.views.generic import RedirectView
 
 ERROR_MISTAKE_INDEX = 'No versions present. Please check if the input is correct.'
-version_control = []
+VERSION_CONTROL = []
 
 
-@csrf_exempt
-def version(request):
-    try:
-        if request.method == 'GET':
-            if not version_control:
-                raise NoElementsInVersionControl
+class VersionView(RedirectView):
+    def get(self, request, *args, **kwargs):
+        if len(kwargs):
+            return JsonResponse(VERSION_CONTROL[kwargs["pk"]])
+        return JsonResponse(VERSION_CONTROL, safe=False)
 
-            return JsonResponse(version_control, safe=False)
+    def post(self, request, *args, **kwargs):
+        print(request)
+        VERSION_CONTROL.append({
+            'id': str(len(VERSION_CONTROL)),
+            'software': request.POST.get('software'),
+            'version': request.POST.get('version')
+        })
 
-        elif request.method == 'POST':
-            version_control.append({
-                'id': str(len(version_control)),
-                'software': request.POST.get('software'),
-                'version': request.POST.get('version')
-            })
+        return JsonResponse(VERSION_CONTROL[len(VERSION_CONTROL) - 1])
 
-            return JsonResponse(version_control[len(version_control) - 1])
-    except NoElementsInVersionControl as error:
-        return JsonResponse({'error': str(error)})
+    def put(self, request, *args, **kwargs):
+        VERSION_CONTROL[kwargs["pk"]] = {
+            'id': str(kwargs["pk"]),
+            'software': request.POST.get('software'),
+            'version': request.POST.get('version')
+        }
 
+        return JsonResponse(VERSION_CONTROL[kwargs["pk"]], safe=False)
 
-def one_version(request, lite_pk):
-    try:
-        if request.method == 'GET':
-            return JsonResponse(version_control[lite_pk], safe=False)
-    except IndexError:
-        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
+    def delete(self, request, *args, **kwargs):
+        VERSION_CONTROL[kwargs["pk"]] = {
+            'id': str(kwargs["pk"]),
+            'software': None,
+            'version': None
+        }
 
-
-@csrf_exempt
-def correct(request, lite_pk):
-    try:
-        if request.method == 'POST':
-            version_control[lite_pk] = {
-                'id': str(lite_pk),
-                'software': request.POST.get('software'),
-                'version': request.POST.get('version')
-            }
-
-            return JsonResponse(version_control[lite_pk], safe=False)
-    except IndexError:
-        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
-
-
-@csrf_exempt
-def delete(request, lite_pk):
-    try:
-        if request.method == 'POST':
-            version_control[lite_pk] = {
-                'id': str(lite_pk),
-                'software': None,
-                'version': None
-                }
-
-            return JsonResponse(version_control[lite_pk], safe=False)
-    except IndexError:
-        return JsonResponse({'error': ERROR_MISTAKE_INDEX})
+        return JsonResponse(VERSION_CONTROL[kwargs["pk"]], safe=False)
