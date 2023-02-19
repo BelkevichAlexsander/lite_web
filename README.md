@@ -1,29 +1,18 @@
 ### Веб-сервис без использования БД
-#### 1. Установка зависимостей
+#### 1. Запуск проекта по веб адресу: http://localhost:8000/version/
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+docker-compose up -d                        
 ```
-#### 2. Миграции
-```bash
-python3 manage.py makemigrations
-python3 manage.py migrate                 
-```
-#### 3. Запуск проекта
-```bash
-python3 manage.py runserver                         
-```
-#### 4. Работа с проектом
+#### 2. Работа с проектом
 ```bash
 open Postman
 ```
 ```text
-GET: http://127.0.0.1:8000/ ===> просмотр всех созданных объектов
+GET: http://127.0.0.1:8000/version/ ===> просмотр всех созданных объектов
 
 GET: http://127.0.0.1:8000/version/<ID созданного объекта>/ ===> просмотр одного созданного объекта
 
-POST: http://127.0.0.1:8000/ ===> создание объекта
+POST: http://127.0.0.1:8000/version ===> создание объекта
     BODY:
         form-data:
                  KEY:       | VALUE: 
@@ -31,12 +20,12 @@ POST: http://127.0.0.1:8000/ ===> создание объекта
                  version    | <Введите Ваше зачение>
                  
 
-POST: http://127.0.0.1:8000/correct/<ID созданного объекта>/ ===> изменение созданного объекта по ID
+POST: http://127.0.0.1:8000/version/<ID созданного объекта>/ ===> изменение созданного объекта по ID
     BODY:
         form-data:
                  KEY:       | VALUE: 
                  software   | <Введите Ваше зачение>
                  version    | <Введите Ваше зачение>
                  
-POST: http://127.0.0.1:8000/delete/<ID созданного объекта>/ ===> удаление созданного объекта по ID
+POST: http://127.0.0.1:8000/version/<ID созданного объекта>/ ===> удаление созданного объекта по ID
 ```
