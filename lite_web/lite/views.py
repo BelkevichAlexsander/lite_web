@@ -1,3 +1,5 @@
+import json
+
 from django.http.response import JsonResponse
 from django.views.generic import RedirectView
 
@@ -12,7 +14,6 @@ class VersionView(RedirectView):
         return JsonResponse(VERSION_CONTROL, safe=False)
 
     def post(self, request, *args, **kwargs):
-        print(request)
         VERSION_CONTROL.append({
             'id': str(len(VERSION_CONTROL)),
             'software': request.POST.get('software'),
@@ -22,10 +23,12 @@ class VersionView(RedirectView):
         return JsonResponse(VERSION_CONTROL[len(VERSION_CONTROL) - 1])
 
     def put(self, request, *args, **kwargs):
+        answer = json.loads(request.body.decode('utf-8'))
+
         VERSION_CONTROL[kwargs["pk"]] = {
             'id': str(kwargs["pk"]),
-            'software': request.POST.get('software'),
-            'version': request.POST.get('version')
+            'software': answer.get('software'),
+            'version': answer.get('version')
         }
 
         return JsonResponse(VERSION_CONTROL[kwargs["pk"]], safe=False)
