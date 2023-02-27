@@ -1,71 +1,49 @@
-from django.shortcuts import render
+import json
+
+from django.http.response import JsonResponse
+from django.views.generic import RedirectView
+
+ERROR_MISTAKE_INDEX = 'No versions present. Please check if the input is correct.'
+VERSION_CONTROL = []
 
 
-dct_version = []
+class VersionView(RedirectView):
+    def get(self, request, *args, **kwargs):
+        if len(kwargs):
+            return JsonResponse(VERSION_CONTROL[kwargs["pk"]])
+        return JsonResponse(VERSION_CONTROL, safe=False)
 
+    def post(self, request, *args, **kwargs):
+        VERSION_CONTROL.append({
+            'id': str(len(VERSION_CONTROL)),
+            'software': request.POST.get('software'),
+            'version': request.POST.get('version')
+        })
 
-def index(request):
-    return render(request, 'lite/index.html')
+        return JsonResponse(VERSION_CONTROL[len(VERSION_CONTROL) - 1])
 
+    def put(self, request, *args, **kwargs):
+        answer = json.loads(request.body.decode('utf-8'))
 
-def version(request):
-    if request.method == 'GET':
-        return render(request, 'lite/version.html')
-    else:
-        if request.POST['software'] is not None or request.POST['version'] is not None:
+        try:
+            VERSION_CONTROL[kwargs["pk"]] = {
+                'id': str(kwargs["pk"]),
+                'software': answer.get('software'),
+                'version': answer.get('version')
+            }
 
-            dct_version.append({
-                'id': len(dct_version),
-                'software': request.POST.get('software'),
-                'version': request.POST.get('version')
-            })
+            return JsonResponse(VERSION_CONTROL[kwargs["pk"]], safe=False)
+        except IndexError:
+            return JsonResponse({'error': ERROR_MISTAKE_INDEX})
 
-            return render(
-                request, 'lite/index.html', {'error': 'object save'}
-            )
-        else:
-            return render(
-                request, 'lite/index.html', {"error": "object don't save"}
-            )
+    def delete(self, request, *args, **kwargs):
+        try:
+            VERSION_CONTROL[kwargs["pk"]] = {
+                'id': str(kwargs["pk"]),
+                'software': None,
+                'version': None
+            }
 
-
-def versions(request):
-    return render(request, 'lite/versions.html', {"lst": dct_version})
-
-
-def openid(request, lite_pk):
-    if request.method == 'GET':
-        for x in dct_version:
-            if x['id'] == lite_pk:
-                return render(request, 'lite/id.html', {'item': x})
-
-
-def correct(request, lite_pk):
-    if request.method == 'POST':
-        print('correct')
-        for i, x in enumerate(dct_version):
-            if x['id'] == lite_pk:
-                dct_version[i] = {
-                    'id': lite_pk,
-                    'software': request.POST.get('software'),
-                    'version': request.POST.get('version')
-                }
-
-                return render(request, 'lite/index.html', {'error': {f'id: {lite_pk} is correct'}})
-    else:
-        return render(request, 'lite/index.html', {'error': {'mistake correct'}})
-
-
-def delete(request, lite_pk):
-    if request.method == 'POST':
-        print('delete')
-        for i, x in enumerate(dct_version):
-            if x['id'] == lite_pk:
-                dct_version[i] = {
-                    'id': lite_pk,
-                    'software': 'delete software',
-                    'version': 'delete version'
-                }
-                return render(request, 'lite/index.html', {'error': {f'id: {lite_pk} is delete. This id is null'}})
-    else:
-        return render(request, 'lite/index.html', {'error': {'mistake delete'}})
+            return JsonResponse(VERSION_CONTROL[kwargs["pk"]], safe=False)
+        except IndexError:
+            return JsonResponse({'error': ERROR_MISTAKE_INDEX})
