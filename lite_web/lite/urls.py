@@ -1,12 +1,10 @@
 from django.urls import path
 
-from . import views
+from .views import VersionView
 
 app_name = 'lite'
 
 urlpatterns = [
-    path('', views.version, name='version'),
-    path('version/<int:lite_pk>/', views.one_version, name='openid'),
-    path('correct/<int:lite_pk>/', views.correct, name='correct'),
-    path('delete/<int:lite_pk>/', views.delete, name='delete'),
+    path('', VersionView.as_view(), name='version'),
+    path('<int:pk>/', VersionView.as_view(), name='version/pk'),
 ]
